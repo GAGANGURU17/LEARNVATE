@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Zap, Menu, X, User, LogOut, LayoutDashboard, ChevronDown, Sparkles, Settings } from 'lucide-react';
+import { Zap, Menu, X, User, LogOut, LayoutDashboard, ChevronDown, Sparkles, Settings, Trophy } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -98,6 +98,14 @@ export function Navbar() {
                         >
                           <LayoutDashboard className="h-4 w-4 text-primary-400" />
                           Dashboard
+                        </Link>
+                        <Link
+                          href="/dashboard/leaderboard"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          <Trophy className="h-4 w-4 text-amber-400" />
+                          Leaderboard
                         </Link>
                         <Link
                           href="/dashboard/profile"

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getQuestionsByCategoryAndDifficulty } from '@/lib/questions';
 import { getNextDifficulty } from '@/lib/adaptive-algorithm';
+import { generateAIQuestion } from '@/lib/gemini';
 import type { Difficulty } from '@/lib/types';
 
 export async function POST(request: NextRequest) {
@@ -40,9 +41,21 @@ export async function POST(request: NextRequest) {
         currentDifficulty,
         answeredIds
       );
+      
       if (fallbackQuestions.length === 0) {
-        return NextResponse.json({ error: 'No more questions available' }, { status: 404 });
+        // AI Fallback
+        try {
+          const aiQuestion = await generateAIQuestion(category, nextDifficulty);
+          return NextResponse.json({
+            question: aiQuestion,
+            nextDifficulty,
+          });
+        } catch (err) {
+          console.error('AI Fallback Error:', err);
+          return NextResponse.json({ error: 'No more questions available and AI failed' }, { status: 404 });
+        }
       }
+      
       const question = fallbackQuestions[Math.floor(Math.random() * fallbackQuestions.length)];
       return NextResponse.json({
         question,

@@ -143,7 +143,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Start learning */}
         <div className="glass-card rounded-3xl p-6 relative overflow-hidden group animate-fade-in-up delay-100">
           <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary-500 blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
@@ -200,6 +200,30 @@ export default function DashboardPage() {
               className="mt-5 flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors group/link"
             >
               View statistics
+              <ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
+            </Link>
+          </div>
+        </div>
+
+        {/* Leaderboard */}
+        <div className="glass-card rounded-3xl p-6 relative overflow-hidden group animate-fade-in-up delay-300">
+          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-500 blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
+          <div className="relative">
+            <div className="flex items-start justify-between">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 text-white shadow-glow-amber">
+                <Trophy className="h-6 w-6" strokeWidth={1.8} />
+              </div>
+              <span className="badge-amber">Competitive</span>
+            </div>
+            <h2 className="mt-4 text-xl font-bold text-white">Global Ranking</h2>
+            <p className="mt-2 text-slate-400 text-sm leading-relaxed">
+              See how you stack up against the best learners globally. Compete for the top spot.
+            </p>
+            <Link
+              href="/dashboard/leaderboard"
+              className="mt-5 flex items-center gap-2 text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors group/link"
+            >
+              Check ranking
               <ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
             </Link>
           </div>

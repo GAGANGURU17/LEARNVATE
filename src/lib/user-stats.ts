@@ -1,6 +1,6 @@
 import type { Difficulty } from './types';
 import { getFirebaseFirestore } from './firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
 export interface UserStats {
   totalQuestions: number;
@@ -107,4 +107,40 @@ export async function updateStatsFromSession(
 
   await saveStats(userId, stats);
   return stats;
+}
+
+export interface LeaderboardEntry {
+  id: string;
+  name: string;
+  totalQuestions: number;
+  correctAnswers: number;
+  accuracy: number;
+}
+
+export async function getLeaderboard(limitCount = 10): Promise<LeaderboardEntry[]> {
+  const db = getFirebaseFirestore();
+  if (!db) return [];
+
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(usersRef, orderBy('stats.correctAnswers', 'desc'), limit(limitCount));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => {
+      const data = doc.data();
+      const stats = data.stats || {};
+      const total = stats.totalQuestions || 0;
+      const correct = stats.correctAnswers || 0;
+      return {
+        id: doc.id,
+        name: data.name || 'Anonymous',
+        totalQuestions: total,
+        correctAnswers: correct,
+        accuracy: total > 0 ? Math.round((correct / total) * 100) : 0,
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    return [];
+  }
 }

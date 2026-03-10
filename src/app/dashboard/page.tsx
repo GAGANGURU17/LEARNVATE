@@ -4,16 +4,19 @@ import Link from 'next/link';
 import {
   BookOpen,
   TrendingUp,
-  Target,
   Award,
   ChevronRight,
   Zap,
   Sparkles,
   Trophy,
-  Flame,
-  BarChart3,
-  Play,
+  Star,
+  Brain,
   ArrowUpRight,
+  Clock,
+  Play,
+  Target,
+  BarChart3,
+  Flame,
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { getStoredStats } from '@/lib/user-stats';

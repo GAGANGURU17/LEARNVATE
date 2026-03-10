@@ -6,9 +6,14 @@ const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
 export async function generateAIQuestion(category: string, difficulty: string): Promise<McqQuestion> {
   const prompt = `
-    Generate a single high-quality multiple choice question for a learning platform called LEARNVATE.
-    Category: ${category}
-    Difficulty: ${difficulty}
+    Generate a single high-quality multiple choice question for a learning platform called LEARNVATE, which specializes in Indian Competitive Exams.
+    Category: ${category} (e.g., UPSC, GATE, SSC, Govt Job)
+    Level: ${difficulty} (e.g., Preliminary, Mains, Advanced)
+    
+    The question must follow the actual syllabus and pattern of Indian exams.
+    For UPSC: Focus on conceptual depth, analytical thinking, and current affairs.
+    For GATE: Focus on technical accuracy, problem-solving, and core engineering concepts.
+    For SSC/Govt: Focus on factual accuracy, speed-based logic, and general awareness.
     
     Format the response as a JSON object with the following structure:
     {
@@ -17,10 +22,10 @@ export async function generateAIQuestion(category: string, difficulty: string): 
       "correctIndex": 0,
       "difficulty": "${difficulty}",
       "category": "${category}",
-      "explanation": "A brief explanation of why the answer is correct"
+      "explanation": "A detailed explanation including the logic or facts behind the correct answer"
     }
 
-    Ensure the question is factually accurate, educational, and fits the ${difficulty} difficulty level.
+    Ensure the question is factually accurate, highly educational, and fits the ${difficulty} level of the ${category} exam.
     Return ONLY the JSON object.
   `;
 

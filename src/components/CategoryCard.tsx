@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { ChevronRight, BookOpen, Clock, Zap } from 'lucide-react';
-import { ExamSetupModal } from './exam/ExamSetupModal';
+import { ExamSetupModal } from './ExamSetupModal';
+import { useRouter } from 'next/navigation';
+import { Difficulty, ExamMode } from '@/lib/types';
 
 interface CategoryCardProps {
   category: string;
@@ -33,9 +35,16 @@ const CATEGORY_COLORS: Record<string, { glow: string; iconBg: string; badge: str
 };
 
 export function CategoryCard({ category, description, questionCount = 15 }: CategoryCardProps) {
+  const router = useRouter();
   const [showSetup, setShowSetup] = useState(false);
   const icon = CATEGORY_ICONS[category] ?? '📝';
-  const slug = category.toLowerCase().replace(/\s+/g, '-');
+  const handleStart = (mode: ExamMode, level: Difficulty) => {
+    const slug = category.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[()]/g, '')
+      .replace(/\//g, '-');
+    router.push(`/quiz/${slug}?mode=${mode}&level=${level}`);
+  };
   const colors = CATEGORY_COLORS[category] ?? {
     glow: 'hover:shadow-glow',
     iconBg: 'bg-gradient-to-br from-primary-400 to-cyan-600',
@@ -89,13 +98,12 @@ export function CategoryCard({ category, description, questionCount = 15 }: Cate
         </div>
       </button>
 
-      {showSetup && (
-        <ExamSetupModal
-          category={category}
-          categorySlug={slug}
-          onClose={() => setShowSetup(false)}
-        />
-      )}
+      <ExamSetupModal
+        isOpen={showSetup}
+        category={category}
+        onClose={() => setShowSetup(false)}
+        onStart={handleStart}
+      />
     </>
   );
 }

@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid category' }, { status: 400 });
   }
 
-  const validDifficulties = ['easy', 'medium', 'hard'];
+  const validDifficulties = ['easy', 'medium', 'hard', 'preliminary', 'mains', 'advanced'];
   if (!validDifficulties.includes(difficulty)) {
     return NextResponse.json({ error: 'Invalid difficulty' }, { status: 400 });
   }
@@ -23,10 +23,18 @@ export async function GET(request: NextRequest) {
   const questions = getQuestionsByCategoryAndDifficulty(category, difficulty, excludeIds);
 
   if (questions.length === 0) {
-    return NextResponse.json(
-      { error: 'No questions available for this category and difficulty' },
-      { status: 404 }
-    );
+    // If no local questions, try AI generation immediately
+    try {
+      const { generateAIQuestion } = await import('@/lib/gemini');
+      const aiQuestion = await generateAIQuestion(category, difficulty);
+      return NextResponse.json(aiQuestion);
+    } catch (err) {
+      console.error('AI Generation Error in GET:', err);
+      return NextResponse.json(
+        { error: 'No questions available and AI generation failed' },
+        { status: 404 }
+      );
+    }
   }
 
   const randomQuestion = questions[Math.floor(Math.random() * questions.length)];

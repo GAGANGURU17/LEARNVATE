@@ -1,6 +1,6 @@
 import type { Difficulty } from './types';
 
-const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard'];
+const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'medium', 'hard', 'preliminary', 'mains', 'advanced'];
 
 /**
  * Adaptive learning algorithm that adjusts question difficulty based on performance.
@@ -37,20 +37,18 @@ export function calculateAccuracy(correct: number, total: number): number {
 /**
  * Get recommended starting difficulty based on historical performance.
  */
-export function getRecommendedDifficulty(stats: {
-  easy: { correct: number; total: number };
-  medium: { correct: number; total: number };
-  hard: { correct: number; total: number };
-}): Difficulty {
-  const totalAnswered = stats.easy.total + stats.medium.total + stats.hard.total;
-  if (totalAnswered < 5) return 'easy';
+export function getRecommendedDifficulty(stats: Record<string, { correct: number; total: number }>): Difficulty {
+  const easyStats = stats.easy || { correct: 0, total: 0 };
+  const mediumStats = stats.medium || { correct: 0, total: 0 };
+  
+  const totalAnswered = Object.values(stats).reduce((acc, s) => acc + s.total, 0);
+  if (totalAnswered < 5) return 'preliminary';
 
-  const easyAccuracy = stats.easy.total > 0 ? stats.easy.correct / stats.easy.total : 0;
-  const mediumAccuracy = stats.medium.total > 0 ? stats.medium.correct / stats.medium.total : 0;
+  const easyAccuracy = easyStats.total > 0 ? easyStats.correct / easyStats.total : 0;
+  const mediumAccuracy = mediumStats.total > 0 ? mediumStats.correct / mediumStats.total : 0;
 
-  if (mediumAccuracy >= 0.8 && stats.medium.total >= 3) return 'hard';
-  if (easyAccuracy >= 0.8 && stats.easy.total >= 3) {
-    if (mediumAccuracy >= 0.7 || stats.medium.total === 0) return 'medium';
-  }
-  return 'easy';
+  if (mediumAccuracy >= 0.8 && mediumStats.total >= 3) return 'advanced';
+  if (easyAccuracy >= 0.8 && easyStats.total >= 3) return 'mains';
+  
+  return 'preliminary';
 }

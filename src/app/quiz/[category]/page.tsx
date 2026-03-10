@@ -8,10 +8,16 @@ import { Navbar } from '@/components/ui/Navbar';
 import { QUESTION_CATEGORIES } from '@/lib/questions';
 import { useAuth } from '@/contexts/AuthContext';
 import { updateStatsFromSession } from '@/lib/user-stats';
-import type { Difficulty } from '@/lib/types';
+import type { Difficulty, ExamMode } from '@/lib/types';
 
 const SLUG_TO_CATEGORY: Record<string, string> = Object.fromEntries(
-  QUESTION_CATEGORIES.map((c) => [c.toLowerCase().replace(/\s+/g, '-'), c])
+  QUESTION_CATEGORIES.map((c) => [
+    c.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[()]/g, '')
+      .replace(/\//g, '-'), 
+    c
+  ])
 );
 
 export default function QuizPage() {
@@ -22,6 +28,8 @@ export default function QuizPage() {
   const slug = typeof params.category === 'string' ? params.category : '';
   const category = SLUG_TO_CATEGORY[slug] ?? slug;
   const topic = (searchParams.get('topic') as 'mixed' | 'easy' | 'medium' | 'hard') ?? 'mixed';
+  const paramMode = (searchParams.get('mode') as ExamMode) ?? 'practice';
+  const paramLevel = (searchParams.get('level') as Difficulty) ?? 'preliminary';
   const timerParam = searchParams.get('timer');
   const timerMinutes = timerParam ? parseInt(timerParam, 10) : 0;
 
@@ -81,6 +89,8 @@ export default function QuizPage() {
         <QuizSession
           category={category}
           topic={topic}
+          mode={paramMode}
+          initialLevel={paramLevel}
           timerMinutes={timerMinutes}
           onComplete={async (stats) => {
             if (isAuthenticated && user?.id) {

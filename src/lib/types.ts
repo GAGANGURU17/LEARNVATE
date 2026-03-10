@@ -1,4 +1,5 @@
-export type Difficulty = 'easy' | 'medium' | 'hard';
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'preliminary' | 'mains' | 'advanced';
+export type ExamMode = 'practice' | 'time-trial' | 'mock-exam';
 
 export interface McqQuestion {
   id: string;

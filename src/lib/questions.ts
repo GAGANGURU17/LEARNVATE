@@ -1,12 +1,12 @@
 import type { McqQuestion } from './types';
 
 export const QUESTION_CATEGORIES = [
-  'Mathematics',
-  'Science',
-  'History',
-  'Geography',
-  'English',
-  'General Knowledge',
+  'UPSC (IAS/IPS)',
+  'GATE (Engineering)',
+  'SSC (CGL/CHSL)',
+  'Central Govt Exams',
+  'State Govt Exams',
+  'University Entrances',
 ] as const;
 
 export const SAMPLE_QUESTIONS: McqQuestion[] = [

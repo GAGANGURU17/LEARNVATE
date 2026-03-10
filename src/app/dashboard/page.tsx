@@ -23,14 +23,17 @@ import { getStoredStats } from '@/lib/user-stats';
 import { QUESTION_CATEGORIES } from '@/lib/questions';
 import { useEffect, useState } from 'react';
 import type { UserStats } from '@/lib/user-stats';
+import { ExamSetupModal } from '@/components/ExamSetupModal';
+import { useRouter } from 'next/navigation';
+import { Difficulty, ExamMode } from '@/lib/types';
 
 const CATEGORY_CONFIG: Record<string, { color: string; bg: string; emoji: string }> = {
-  Mathematics:  { color: 'text-primary-400',  bg: 'bg-primary-500/15',  emoji: '🔢' },
-  Science:      { color: 'text-cyan-400',      bg: 'bg-cyan-500/15',      emoji: '🔬' },
-  History:      { color: 'text-amber-400',     bg: 'bg-amber-500/15',     emoji: '📜' },
-  Geography:    { color: 'text-rose-400',      bg: 'bg-rose-500/15',      emoji: '🌍' },
-  Literature:   { color: 'text-violet-400',    bg: 'bg-violet-500/15',    emoji: '📚' },
-  Technology:   { color: 'text-indigo-400',    bg: 'bg-indigo-500/15',    emoji: '💻' },
+  'UPSC (IAS/IPS)':        { color: 'text-amber-400',     bg: 'bg-amber-500/15',     emoji: '🏛️' },
+  'GATE (Engineering)':    { color: 'text-indigo-400',    bg: 'bg-indigo-500/15',    emoji: '⚙️' },
+  'SSC (CGL/CHSL)':        { color: 'text-cyan-400',      bg: 'bg-cyan-500/15',      emoji: '📊' },
+  'Central Govt Exams':    { color: 'text-primary-400',   bg: 'bg-primary-500/15',   emoji: '🇮🇳' },
+  'State Govt Exams':      { color: 'text-emerald-400',   bg: 'bg-emerald-500/15',   emoji: '🚩' },
+  'University Entrances':  { color: 'text-violet-400',    bg: 'bg-violet-500/15',    emoji: '🎓' },
 };
 
 function StatCard({
@@ -66,12 +69,29 @@ function StatCard({
 }
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { user } = useAuth();
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     getStoredStats(user?.id ?? null).then(setStats);
   }, [user?.id]);
+
+  const handleCategoryClick = (category: string) => {
+    setSelectedCategory(category);
+    setIsModalOpen(true);
+  };
+
+  const handleStartExam = (mode: ExamMode, level: Difficulty) => {
+    if (!selectedCategory) return;
+    const slug = selectedCategory.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[()]/g, '')
+      .replace(/\//g, '-');
+    router.push(`/quiz/${slug}?mode=${mode}&level=${level}`);
+  };
 
   const accuracy =
     stats && stats.totalQuestions > 0
@@ -254,32 +274,39 @@ export default function DashboardPage() {
             const config = CATEGORY_CONFIG[cat] ?? { color: 'text-slate-400', bg: 'bg-white/5', emoji: '📖' };
 
             return (
-              <Link
+              <button
                 key={cat}
-                href={`/quiz/${slug}`}
-                className={`flex items-center justify-between rounded-2xl ${config.bg} border border-white/6 px-4 py-3.5 transition-all duration-200 hover:border-white/15 hover:scale-[1.02] group animate-fade-in-up`}
+                onClick={() => handleCategoryClick(cat)}
+                className={`flex items-center justify-between rounded-2xl ${config.bg} border border-white/6 px-4 py-3.5 transition-all duration-200 hover:border-white/15 hover:scale-[1.02] group animate-fade-in-up w-full`}
                 style={{ animationDelay: `${300 + i * 80}ms` }}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 text-left">
                   <span className="text-xl">{config.emoji}</span>
                   <span className={`font-semibold text-sm ${config.color}`}>{cat}</span>
                 </div>
                 {catAccuracy !== null ? (
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     <Flame className="h-3.5 w-3.5 text-amber-400" />
                     <span className={`text-sm font-bold ${config.color}`}>{catAccuracy}%</span>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-1 text-slate-600 group-hover:text-slate-400 transition-colors">
+                  <div className="flex items-center gap-1 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0">
                     <Zap className="h-3.5 w-3.5" />
-                    <span className="text-xs">Start</span>
+                    <span className="text-xs font-bold uppercase tracking-tight">Focus</span>
                   </div>
                 )}
-              </Link>
+              </button>
             );
           })}
         </div>
       </div>
+
+      <ExamSetupModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        category={selectedCategory || ''}
+        onStart={handleStartExam}
+      />
     </div>
   );
 }

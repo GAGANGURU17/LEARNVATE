@@ -2,12 +2,22 @@ import type { Difficulty } from './types';
 import { getFirebaseFirestore } from './firebase';
 import { doc, getDoc, setDoc, collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 
+export interface SessionEntry {
+  id: string;
+  category: string;
+  correct: number;
+  total: number;
+  difficulty: Difficulty;
+  timestamp: number;
+}
+
 export interface UserStats {
   totalQuestions: number;
   correctAnswers: number;
   sessionsCompleted: number;
   byCategory: Record<string, { correct: number; total: number }>;
   byDifficulty: Record<Difficulty, { correct: number; total: number }>;
+  history: SessionEntry[];
   lastActive: number;
 }
 
@@ -23,7 +33,11 @@ function getEmptyStats(): UserStats {
       easy: { correct: 0, total: 0 },
       medium: { correct: 0, total: 0 },
       hard: { correct: 0, total: 0 },
+      preliminary: { correct: 0, total: 0 },
+      mains: { correct: 0, total: 0 },
+      advanced: { correct: 0, total: 0 },
     },
+    history: [],
     lastActive: 0,
   };
 }
@@ -100,10 +114,24 @@ export async function updateStatsFromSession(
   stats.byCategory[category].correct += correct;
   stats.byCategory[category].total += total;
 
-  (['easy', 'medium', 'hard'] as Difficulty[]).forEach((d) => {
-    stats.byDifficulty[d].correct += byDifficulty[d].correct;
-    stats.byDifficulty[d].total += byDifficulty[d].total;
+  (['easy', 'medium', 'hard', 'preliminary', 'mains', 'advanced'] as Difficulty[]).forEach((d) => {
+    if (byDifficulty[d]) {
+      stats.byDifficulty[d].correct += byDifficulty[d].correct;
+      stats.byDifficulty[d].total += byDifficulty[d].total;
+    }
   });
+
+  stats.history = [
+    {
+      id: Math.random().toString(36).substring(2, 9),
+      category,
+      correct,
+      total,
+      difficulty: (Object.entries(byDifficulty).sort((a,b) => b[1].total - a[1].total)[0]?.[0] as Difficulty) || 'preliminary',
+      timestamp: Date.now(),
+    },
+    ...(stats.history || []),
+  ].slice(0, 50);
 
   await saveStats(userId, stats);
   return stats;

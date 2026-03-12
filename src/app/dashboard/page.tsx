@@ -26,47 +26,17 @@ import type { UserStats } from '@/lib/user-stats';
 import { ExamSetupModal } from '@/components/ExamSetupModal';
 import { useRouter } from 'next/navigation';
 import { Difficulty, ExamMode } from '@/lib/types';
+import { MetricWidget, PerformanceChart } from '@/components/DashboardCharts';
+import { HistoryFilter } from '@/components/HistoryFilter';
 
 const CATEGORY_CONFIG: Record<string, { color: string; bg: string; emoji: string }> = {
-  'UPSC (IAS/IPS)':        { color: 'text-amber-400',     bg: 'bg-amber-500/15',     emoji: '🏛️' },
-  'GATE (Engineering)':    { color: 'text-indigo-400',    bg: 'bg-indigo-500/15',    emoji: '⚙️' },
-  'SSC (CGL/CHSL)':        { color: 'text-cyan-400',      bg: 'bg-cyan-500/15',      emoji: '📊' },
-  'Central Govt Exams':    { color: 'text-primary-400',   bg: 'bg-primary-500/15',   emoji: '🇮🇳' },
-  'State Govt Exams':      { color: 'text-emerald-400',   bg: 'bg-emerald-500/15',   emoji: '🚩' },
-  'University Entrances':  { color: 'text-violet-400',    bg: 'bg-violet-500/15',    emoji: '🎓' },
+  'UPSC (IAS/IPS)':        { color: 'text-saffron-700',   bg: 'bg-saffron-50',   emoji: '🏛️' },
+  'GATE (Engineering)':    { color: 'text-navy-600',      bg: 'bg-navy-50',      emoji: '⚙️' },
+  'SSC (CGL/CHSL)':        { color: 'text-igreen-700',    bg: 'bg-igreen-50',    emoji: '📊' },
+  'Central Govt Exams':    { color: 'text-saffron-600',   bg: 'bg-saffron-50',   emoji: '🇮🇳' },
+  'State Govt Exams':      { color: 'text-igreen-600',    bg: 'bg-igreen-50',    emoji: '🚩' },
+  'University Entrances':  { color: 'text-navy-500',      bg: 'bg-navy-50',      emoji: '🎓' },
 };
-
-function StatCard({
-  label,
-  value,
-  icon: Icon,
-  gradient,
-  orbColor,
-  delay = '',
-}: {
-  label: string;
-  value: string | number;
-  icon: React.ElementType;
-  gradient: string;
-  orbColor: string;
-  delay?: string;
-}) {
-  return (
-    <div className={`stat-card rounded-2xl animate-fade-in-up ${delay}`} style={{ color: 'transparent' }}>
-      {/* Top gradient line */}
-      <div className={`absolute top-0 left-0 right-0 h-0.5 rounded-t-2xl ${gradient}`} />
-      {/* Glow orb */}
-      <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full ${orbColor} blur-2xl opacity-20`} />
-      <div className="relative">
-        <div className={`inline-flex rounded-xl p-2.5 ${gradient} bg-opacity-10`}>
-          <Icon className="h-5 w-5 text-white" strokeWidth={1.8} />
-        </div>
-        <p className="mt-4 text-3xl font-extrabold text-white">{value}</p>
-        <p className="text-sm text-slate-500 mt-1">{label}</p>
-      </div>
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -74,6 +44,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filters, setFilters] = useState({ category: 'All Categories', timeframe: 'All Time', search: '' });
 
   useEffect(() => {
     getStoredStats(user?.id ?? null).then(setStats);
@@ -84,13 +55,13 @@ export default function DashboardPage() {
     setIsModalOpen(true);
   };
 
-  const handleStartExam = (mode: ExamMode, level: Difficulty) => {
+  const handleStartExam = (mode: ExamMode, level: Difficulty, timing: number, questionCount: number, topic: string) => {
     if (!selectedCategory) return;
     const slug = selectedCategory.toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[()]/g, '')
       .replace(/\//g, '-');
-    router.push(`/quiz/${slug}?mode=${mode}&level=${level}`);
+    router.push(`/quiz/${slug}?mode=${mode}&level=${level}&timer=${timing}&count=${questionCount}&topic=${topic}`);
   };
 
   const accuracy =
@@ -98,206 +69,175 @@ export default function DashboardPage() {
       ? Math.round((stats.correctAnswers / stats.totalQuestions) * 100)
       : 0;
 
-  const topCategory =
-    stats && Object.keys(stats.byCategory).length > 0
-      ? Object.entries(stats.byCategory).sort(
-          (a, b) => b[1].correct / (b[1].total || 1) - a[1].correct / (a[1].total || 1)
-        )[0]
-      : null;
+  const filteredHistory = (stats?.history || []).filter(session => {
+    const matchesCategory = filters.category === 'All Categories' || session.category === filters.category;
+    const matchesSearch = filters.search === '' || session.category.toLowerCase().includes(filters.search.toLowerCase());
+    
+    let matchesTime = true;
+    const now = Date.now();
+    const day = 24 * 60 * 60 * 1000;
+    if (filters.timeframe === 'Today') matchesTime = now - session.timestamp < day;
+    else if (filters.timeframe === 'Last 7 Days') matchesTime = now - session.timestamp < 7 * day;
+    else if (filters.timeframe === 'This Month') matchesTime = now - session.timestamp < 30 * day;
+
+    return matchesCategory && matchesSearch && matchesTime;
+  });
 
   return (
-    <div className="space-y-8">
-      {/* Welcome section */}
-      <div className="animate-fade-in-up">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white">
-              Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0] ?? 'Learner'}</span>! 👋
+    <div className="max-w-[1400px] mx-auto space-y-10 reveal-up">
+      {/* Premium Welcome Hero */}
+      <div className="relative p-8 rounded-[2.5rem] bg-navy-900 overflow-hidden group shadow-2xl edu-glow reveal-up">
+        <div className="absolute inset-0 bg-gradient-to-br from-navy-800/80 via-navy-900/40 to-slate-950/80 animate-pulse-slow" />
+        {/* Abstract shapes */}
+        <div className="absolute -right-20 -top-20 w-64 h-64 bg-saffron-500/10 rounded-full blur-[80px] group-hover:bg-saffron-500/20 transition-all duration-1000" />
+        <div className="absolute -left-20 -bottom-20 w-80 h-80 bg-igreen-500/10 rounded-full blur-[100px] group-hover:bg-igreen-500/20 transition-all duration-1000" />
+        
+        <div className="relative flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          <div className="max-w-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-saffron-400 text-xs font-bold uppercase tracking-widest mb-4">
+              <Sparkles className="h-3.5 w-3.5" />
+              Syllabus Powered by AI
+            </div>
+            <h1 className="text-4xl sm:text-5xl font-black text-white leading-tight">
+              Ready to crush your <span className="text-transparent bg-clip-text bg-gradient-to-r from-saffron-400 to-igreen-400">Exams</span>, {user?.name?.split(' ')[0]}?
             </h1>
-            <p className="mt-1.5 text-slate-400">
-              Continue your learning journey. Your progress is saved.
+            <p className="mt-4 text-slate-400 text-lg leading-relaxed">
+              You&apos;ve answered <span className="text-white font-bold">{stats?.totalQuestions ?? 0}</span> questions with <span className="text-white font-bold">{accuracy}%</span> accuracy. Your next milestone is 1000 points.
             </p>
           </div>
-          <Link
-            href="/dashboard/learn"
-            className="btn-primary w-fit text-sm px-5 py-2.5"
-          >
-            <Play className="h-4 w-4" />
-            Start Quiz
-            <ChevronRight className="h-4 w-4" />
-          </Link>
+          <div className="flex gap-4">
+            <Link href="/dashboard/learn" className="btn-primary py-4 px-8 rounded-2xl text-base shadow-glow-saffron">
+              <Play className="h-5 w-5 fill-current" />
+              Start New Test
+              <ChevronRight className="h-5 w-5" />
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          label="Questions Answered"
+      {/* Realistic Metric Dashboard */}
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <MetricWidget
+          label="Total Questions"
           value={stats?.totalQuestions ?? 0}
+          change={12}
           icon={BookOpen}
-          gradient="bg-gradient-to-br from-cyan-400 to-primary-600"
-          orbColor="bg-cyan-400"
+          gradient="bg-gradient-to-br from-saffron-500 to-saffron-600"
           delay="delay-100"
         />
-        <StatCard
-          label="Correct Answers"
-          value={stats?.correctAnswers ?? 0}
-          icon={Target}
-          gradient="bg-gradient-to-br from-primary-400 to-emerald-600"
-          orbColor="bg-primary-400"
+        <MetricWidget
+          label="Accuracy"
+          value={`${accuracy}%`}
+          change={accuracy > 0 ? 5 : 0}
+          icon={TrendingUp}
+          gradient="bg-gradient-to-br from-igreen-500 to-igreen-600"
           delay="delay-200"
         />
-        <StatCard
-          label="Accuracy Rate"
-          value={`${accuracy}%`}
-          icon={TrendingUp}
-          gradient="bg-gradient-to-br from-violet-400 to-indigo-600"
-          orbColor="bg-violet-400"
+        <MetricWidget
+          label="Sessions"
+          value={stats?.sessionsCompleted ?? 0}
+          icon={Clock}
+          gradient="bg-gradient-to-br from-navy-400 to-navy-600"
           delay="delay-300"
         />
-        <StatCard
-          label="Sessions Completed"
-          value={stats?.sessionsCompleted ?? 0}
-          icon={Award}
-          gradient="bg-gradient-to-br from-amber-400 to-rose-500"
-          orbColor="bg-amber-400"
-          delay="delay-400"
-        />
-      </div>
-
-      {/* Quick actions */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {/* Start learning */}
-        <div className="glass-card rounded-3xl p-6 relative overflow-hidden group animate-fade-in-up delay-100">
-          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary-500 blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
-          <div className="relative">
-            <div className="flex items-start justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-400 to-cyan-600 text-white shadow-glow">
-                <Sparkles className="h-6 w-6" strokeWidth={1.8} />
-              </div>
-              <span className="badge-green">Active</span>
-            </div>
-            <h2 className="mt-4 text-xl font-bold text-white">Start Learning</h2>
-            <p className="mt-2 text-slate-400 text-sm leading-relaxed">
-              Pick a category and begin your adaptive quiz. AI adjusts difficulty to your level.
-            </p>
-            <Link
-              href="/dashboard/learn"
-              className="mt-5 flex items-center gap-2 text-sm font-semibold text-primary-400 hover:text-primary-300 transition-colors group/link"
-            >
-              Choose category
-              <ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Progress */}
-        <div className="glass-card rounded-3xl p-6 relative overflow-hidden group animate-fade-in-up delay-200">
-          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-violet-500 blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
-          <div className="relative">
-            <div className="flex items-start justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-400 to-indigo-600 text-white shadow-glow-violet">
-                <BarChart3 className="h-6 w-6" strokeWidth={1.8} />
-              </div>
-              {accuracy > 0 && (
-                <span className="badge-violet">{accuracy}% avg</span>
-              )}
-            </div>
-            <h2 className="mt-4 text-xl font-bold text-white">Your Progress</h2>
-            {topCategory ? (
-              <p className="mt-2 text-slate-400 text-sm leading-relaxed">
-                Strongest in{' '}
-                <span className="text-white font-semibold">{topCategory[0]}</span> with{' '}
-                <span className="text-violet-400 font-semibold">
-                  {Math.round((topCategory[1].correct / topCategory[1].total) * 100)}%
-                </span>{' '}
-                accuracy.
-              </p>
-            ) : (
-              <p className="mt-2 text-slate-400 text-sm leading-relaxed">
-                Complete a quiz to see your category breakdown and performance insights.
-              </p>
-            )}
-            <Link
-              href="/dashboard/stats"
-              className="mt-5 flex items-center gap-2 text-sm font-semibold text-violet-400 hover:text-violet-300 transition-colors group/link"
-            >
-              View statistics
-              <ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Leaderboard */}
-        <div className="glass-card rounded-3xl p-6 relative overflow-hidden group animate-fade-in-up delay-300">
-          <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-amber-500 blur-3xl opacity-10 group-hover:opacity-20 transition-opacity" />
-          <div className="relative">
-            <div className="flex items-start justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-400 to-yellow-600 text-white shadow-glow-amber">
-                <Trophy className="h-6 w-6" strokeWidth={1.8} />
-              </div>
-              <span className="badge-amber">Competitive</span>
-            </div>
-            <h2 className="mt-4 text-xl font-bold text-white">Global Ranking</h2>
-            <p className="mt-2 text-slate-400 text-sm leading-relaxed">
-              See how you stack up against the best learners globally. Compete for the top spot.
-            </p>
-            <Link
-              href="/dashboard/leaderboard"
-              className="mt-5 flex items-center gap-2 text-sm font-semibold text-amber-400 hover:text-amber-300 transition-colors group/link"
-            >
-              Check ranking
-              <ArrowUpRight className="h-4 w-4 group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5 transition-transform" />
-            </Link>
-          </div>
+        <div className="p-6 rounded-[2rem] border border-gray-100 shadow-sm reveal-up edu-glass delay-400">
+          <PerformanceChart history={stats?.history || []} />
+          <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Performance Trend</p>
         </div>
       </div>
 
-      {/* Categories */}
-      <div className="glass-card rounded-3xl p-6 animate-fade-in-up delay-300">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-white">Practice Categories</h2>
-            <p className="mt-0.5 text-slate-400 text-sm">6 subjects to master</p>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Feed: Recent Activity with Filtering */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-black text-slate-900 tracking-tight">Recent Activity</h2>
+            <Link href="/dashboard/stats" className="text-sm font-bold text-saffron-600 hover:text-saffron-700 flex items-center gap-1">
+              Deep Analytics <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
-          <Trophy className="h-5 w-5 text-amber-400" />
-        </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {QUESTION_CATEGORIES.slice(0, 6).map((cat, i) => {
-            const slug = cat.toLowerCase().replace(/\s+/g, '-');
-            const catStats = stats?.byCategory[cat];
-            const catAccuracy =
-              catStats && catStats.total > 0
-                ? Math.round((catStats.correct / catStats.total) * 100)
-                : null;
-            const config = CATEGORY_CONFIG[cat] ?? { color: 'text-slate-400', bg: 'bg-white/5', emoji: '📖' };
+          <HistoryFilter 
+            categories={QUESTION_CATEGORIES as unknown as string[]} 
+            onFilterChange={setFilters} 
+          />
 
-            return (
-              <button
-                key={cat}
-                onClick={() => handleCategoryClick(cat)}
-                className={`flex items-center justify-between rounded-2xl ${config.bg} border border-white/6 px-4 py-3.5 transition-all duration-200 hover:border-white/15 hover:scale-[1.02] group animate-fade-in-up w-full`}
-                style={{ animationDelay: `${300 + i * 80}ms` }}
-              >
-                <div className="flex items-center gap-3 text-left">
-                  <span className="text-xl">{config.emoji}</span>
-                  <span className={`font-semibold text-sm ${config.color}`}>{cat}</span>
+          <div className="space-y-4">
+            {filteredHistory.length > 0 ? (
+              filteredHistory.map((session, i) => (
+                <div 
+                  key={session.id} 
+                  className="flex items-center justify-between p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-all reveal-up"
+                  style={{ animationDelay: `${i * 100}ms` }}
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="h-12 w-12 rounded-xl bg-slate-50 flex items-center justify-center text-xl grayscale-[0.5] group-hover:grayscale-0">
+                      {CATEGORY_CONFIG[session.category]?.emoji || '📝'}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-900">{session.category}</h4>
+                      <p className="text-xs text-slate-400 uppercase font-black tracking-widest">{session.difficulty}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="flex items-center gap-2">
+                       <span className="text-lg font-black text-slate-900">{session.correct}/{session.total}</span>
+                       <div className="h-8 w-8 rounded-full border-2 border-igreen-100 flex items-center justify-center text-[10px] font-black text-igreen-600">
+                         {Math.round((session.correct/session.total)*100)}%
+                       </div>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">{new Date(session.timestamp).toLocaleDateString()}</p>
+                  </div>
                 </div>
-                {catAccuracy !== null ? (
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <Flame className="h-3.5 w-3.5 text-amber-400" />
-                    <span className={`text-sm font-bold ${config.color}`}>{catAccuracy}%</span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0">
-                    <Zap className="h-3.5 w-3.5" />
-                    <span className="text-xs font-bold uppercase tracking-tight">Focus</span>
-                  </div>
-                )}
-              </button>
-            );
-          })}
+              ))
+            ) : (
+              <div className="p-12 rounded-[2rem] border-2 border-dashed border-gray-100 text-center">
+                <Brain className="h-10 w-10 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-500 font-medium">No sessions found matching your filter.</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar: Recommended & Insights */}
+        <div className="space-y-6">
+          <div className="p-8 rounded-[2rem] bg-gradient-to-br from-igreen-500 to-igreen-700 text-white shadow-xl relative overflow-hidden group">
+            <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+            <h3 className="text-xl font-black mb-4">AI Study Insights</h3>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm">
+                <p className="text-xs text-igreen-100 uppercase font-black tracking-tighter mb-1">Focus Area</p>
+                <p className="text-sm font-bold">You&apos;re improving in Logic, but keep an eye on History facts.</p>
+              </div>
+              <div className="p-4 rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm">
+                <p className="text-xs text-igreen-100 uppercase font-black tracking-tighter mb-1">Weekly Streak</p>
+                <div className="flex items-center gap-1 mt-2">
+                  {[0,1,2,3,4,5,6].map(d => (
+                    <div key={d} className={`h-8 flex-1 rounded-lg ${d < 3 ? 'bg-saffron-400' : 'bg-white/10'}`} />
+                  ))}
+                </div>
+              </div>
+            </div>
+            <Link href="/dashboard/leaderboard" className="mt-6 flex items-center justify-center gap-2 w-full py-4 rounded-xl bg-white text-igreen-700 font-black text-sm hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg">
+              <Trophy className="h-4 w-4" />
+              View Global Ranking
+            </Link>
+          </div>
+
+          <div className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm">
+            <h3 className="text-lg font-black text-slate-900 mb-4">Quick Practice</h3>
+            <div className="grid gap-3">
+              {Object.entries(CATEGORY_CONFIG).slice(0, 4).map(([name, conf]) => (
+                <button 
+                  key={name}
+                  onClick={() => handleCategoryClick(name)}
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors group text-left"
+                >
+                  <span className="text-xl">{conf.emoji}</span>
+                  <span className="text-sm font-bold text-slate-700 group-hover:text-saffron-600 transition-colors">{name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
 

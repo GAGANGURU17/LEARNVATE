@@ -13,33 +13,33 @@ describe('QuizSession', () => {
     mockFetch.mockImplementation(
       () => new Promise(() => {}) // never resolves
     );
-    render(<QuizSession category="Mathematics" onComplete={vi.fn()} />);
-    expect(screen.getByText(/Loading question/i)).toBeInTheDocument();
+    render(<QuizSession category="UPSC (IAS/IPS)" onComplete={vi.fn()} />);
+    expect(screen.getByText(/AI is crafting your exam/i)).toBeInTheDocument();
   });
 
   it('fetches first question on mount', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
-        id: 'm1',
-        category: 'Mathematics',
+        id: 'upsc-1',
+        category: 'UPSC (IAS/IPS)',
         question: 'What is 2+2?',
         options: ['3', '4', '5'],
         correctIndex: 1,
-        difficulty: 'easy',
+        difficulty: 'preliminary',
       }),
     });
-    render(<QuizSession category="Mathematics" onComplete={vi.fn()} />);
+    render(<QuizSession category="UPSC (IAS/IPS)" onComplete={vi.fn()} />);
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(expect.stringContaining('/api/questions?'));
     });
   });
 
   it('shows error when fetch fails', async () => {
-    mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'Failed' }) });
-    render(<QuizSession category="Mathematics" onComplete={vi.fn()} />);
+    mockFetch.mockResolvedValueOnce({ ok: false, json: async () => ({ error: 'Failed to fetch' }) });
+    render(<QuizSession category="UPSC (IAS/IPS)" onComplete={vi.fn()} />);
     await waitFor(() => {
-      expect(screen.getByText(/Error:/)).toBeInTheDocument();
+      expect(screen.getByText(/Failed to fetch/)).toBeInTheDocument();
     });
   });
 });

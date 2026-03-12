@@ -48,6 +48,9 @@ const defaultStats = {
     easy: { correct: 0, total: 0 },
     medium: { correct: 0, total: 0 },
     hard: { correct: 0, total: 0 },
+    preliminary: { correct: 0, total: 0 },
+    mains: { correct: 0, total: 0 },
+    advanced: { correct: 0, total: 0 },
   },
   lastActive: 0,
 };
@@ -83,29 +86,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       return;
     }
-    const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (fbUser) => {
       if (fbUser) {
         let name = fbUser.displayName || fbUser.email?.split('@')[0] || 'Learner';
-        if (db) {
-          try {
-            const userDoc = await getDoc(doc(db, 'users', fbUser.uid));
-            if (userDoc.exists() && userDoc.data()?.name) {
-              name = userDoc.data().name;
-            }
-          } catch {
-            // use default name
-          }
-        }
+        
+        // Set user immediately to unblock UI
         setUser({
           id: fbUser.uid,
           email: fbUser.email ?? '',
           name,
           joinedAt: 0,
         });
+        setIsLoading(false);
+
+        // Fetch custom name asynchronously
+        if (db) {
+          getDoc(doc(db, 'users', fbUser.uid))
+            .then((userDoc) => {
+              if (userDoc.exists() && userDoc.data()?.name) {
+                setUser((prev) => (prev ? { ...prev, name: userDoc.data()!.name } : null));
+              }
+            })
+            .catch((err) => {
+              console.warn('Could not fetch user profile from Firestore:', err);
+            });
+        }
       } else {
         setUser(null);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
     return () => unsubscribe();
   }, [auth, db]);
@@ -144,6 +153,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               easy: { correct: 0, total: 0 },
               medium: { correct: 0, total: 0 },
               hard: { correct: 0, total: 0 },
+              preliminary: { correct: 0, total: 0 },
+              mains: { correct: 0, total: 0 },
+              advanced: { correct: 0, total: 0 },
             },
             lastActive: 0,
           },

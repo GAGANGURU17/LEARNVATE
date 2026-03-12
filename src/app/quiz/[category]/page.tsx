@@ -32,6 +32,8 @@ export default function QuizPage() {
   const paramLevel = (searchParams.get('level') as Difficulty) ?? 'preliminary';
   const timerParam = searchParams.get('timer');
   const timerMinutes = timerParam ? parseInt(timerParam, 10) : 0;
+  const countParam = searchParams.get('count');
+  const questionCount = countParam ? parseInt(countParam, 10) : 20;
 
   const [completed, setCompleted] = useState(false);
   const [sessionStats, setSessionStats] = useState<{
@@ -40,6 +42,7 @@ export default function QuizPage() {
     byDifficulty: Record<Difficulty, { correct: number; total: number }>;
     timeUp?: boolean;
   } | null>(null);
+  const [isExamActive, setIsExamActive] = useState(false);
 
   if (!QUESTION_CATEGORIES.includes(category as (typeof QUESTION_CATEGORIES)[number])) {
     return (
@@ -48,7 +51,7 @@ export default function QuizPage() {
         <button
           type="button"
           onClick={() => router.push('/')}
-          className="mt-4 text-primary-600 hover:underline"
+          className="mt-4 text-saffron-600 hover:underline"
         >
           Back to Home
         </button>
@@ -58,9 +61,9 @@ export default function QuizPage() {
 
   if (completed && sessionStats) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50/30">
+      <div className="min-h-screen">
         <Navbar />
-        <main className="mx-auto max-w-2xl px-4 py-12">
+        <main className="mx-auto max-w-2xl px-4 py-12 reveal-up">
           <SessionSummary
             total={sessionStats.total}
             correct={sessionStats.correct}
@@ -77,22 +80,35 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-primary-50/30">
-      <Navbar />
-      <main className="mx-auto max-w-2xl px-4 py-12">
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-900">{category}</h1>
-          <p className="mt-1 text-slate-600">
-            Adaptive MCQ — difficulty adjusts to your performance
-          </p>
-        </div>
+    <div className="min-h-screen">
+      {!isExamActive && <Navbar />}
+      {!isExamActive && (
+        <main className="mx-auto max-w-2xl px-4 py-12 reveal-up">
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-slate-900">{category}</h1>
+            <p className="mt-1 text-slate-600">
+              Adaptive MCQ — difficulty adjusts to your performance
+            </p>
+          </div>
+          <button 
+            onClick={() => setIsExamActive(true)}
+            className="btn-primary w-full py-6 rounded-3xl text-xl font-bold transition-all hover:scale-[1.02] shadow-xl"
+          >
+            Start {category} Examination
+          </button>
+        </main>
+      )}
+
+      {isExamActive && (
         <QuizSession
           category={category}
           topic={topic}
           mode={paramMode}
           initialLevel={paramLevel}
           timerMinutes={timerMinutes}
-          onComplete={async (stats) => {
+          maxQuestions={questionCount}
+          onComplete={async (stats: any) => {
+            setIsExamActive(false);
             if (isAuthenticated && user?.id) {
               await updateStatsFromSession(
                 user.id,
@@ -111,7 +127,7 @@ export default function QuizPage() {
             setCompleted(true);
           }}
         />
-      </main>
+      )}
     </div>
   );
 }

@@ -8,12 +8,12 @@ import {
 
 describe('QUESTION_CATEGORIES', () => {
   it('contains expected categories', () => {
-    expect(QUESTION_CATEGORIES).toContain('Mathematics');
-    expect(QUESTION_CATEGORIES).toContain('Science');
-    expect(QUESTION_CATEGORIES).toContain('History');
-    expect(QUESTION_CATEGORIES).toContain('Geography');
-    expect(QUESTION_CATEGORIES).toContain('English');
-    expect(QUESTION_CATEGORIES).toContain('General Knowledge');
+    expect(QUESTION_CATEGORIES).toContain('UPSC (IAS/IPS)');
+    expect(QUESTION_CATEGORIES).toContain('GATE (Engineering)');
+    expect(QUESTION_CATEGORIES).toContain('SSC (CGL/CHSL)');
+    expect(QUESTION_CATEGORIES).toContain('Central Govt Exams');
+    expect(QUESTION_CATEGORIES).toContain('State Govt Exams');
+    expect(QUESTION_CATEGORIES).toContain('University Entrances');
     expect(QUESTION_CATEGORIES).toHaveLength(6);
   });
 });
@@ -21,7 +21,7 @@ describe('QUESTION_CATEGORIES', () => {
 describe('SAMPLE_QUESTIONS', () => {
   it('has questions for each category', () => {
     const categories = new Set(SAMPLE_QUESTIONS.map((q) => q.category));
-    expect(categories.size).toBe(6);
+    expect(categories.size).toBe(10); 
   });
 
   it('each question has valid structure', () => {
@@ -33,26 +33,26 @@ describe('SAMPLE_QUESTIONS', () => {
       expect(q.options.length).toBeGreaterThanOrEqual(2);
       expect(q.correctIndex).toBeGreaterThanOrEqual(0);
       expect(q.correctIndex).toBeLessThan(q.options.length);
-      expect(['easy', 'medium', 'hard']).toContain(q.difficulty);
+      expect(['easy', 'medium', 'hard', 'preliminary', 'mains', 'advanced']).toContain(q.difficulty);
     });
   });
 });
 
 describe('getQuestionsByCategoryAndDifficulty', () => {
   it('returns matching questions', () => {
-    const result = getQuestionsByCategoryAndDifficulty('Mathematics', 'easy', []);
+    const result = getQuestionsByCategoryAndDifficulty('UPSC (IAS/IPS)', 'preliminary', []);
     expect(result.length).toBeGreaterThan(0);
     result.forEach((q) => {
-      expect(q.category).toBe('Mathematics');
-      expect(q.difficulty).toBe('easy');
+      expect(q.category).toBe('UPSC (IAS/IPS)');
+      expect(q.difficulty).toBe('preliminary');
     });
   });
 
   it('excludes specified ids', () => {
-    const all = getQuestionsByCategoryAndDifficulty('Mathematics', 'easy', []);
+    const all = getQuestionsByCategoryAndDifficulty('UPSC (IAS/IPS)', 'preliminary', []);
     const firstId = all[0]?.id;
     expect(firstId).toBeTruthy();
-    const excluded = getQuestionsByCategoryAndDifficulty('Mathematics', 'easy', [
+    const excluded = getQuestionsByCategoryAndDifficulty('UPSC (IAS/IPS)', 'preliminary', [
       firstId as string,
     ]);
     expect(excluded.some((q) => q.id === firstId)).toBe(false);
@@ -66,9 +66,9 @@ describe('getQuestionsByCategoryAndDifficulty', () => {
 
 describe('getQuestionById', () => {
   it('returns question when id exists', () => {
-    const q = getQuestionById('m1');
+    const q = getQuestionById('upsc-1');
     expect(q).toBeDefined();
-    expect(q?.id).toBe('m1');
+    expect(q?.id).toBe('upsc-1');
   });
 
   it('returns undefined when id does not exist', () => {

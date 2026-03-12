@@ -25,3 +25,10 @@ yarn-error.log*
 # IDE
 .idea
 .vscode
+
+# Build artifacts
+*.tsbuildinfo
+lint-results.json
+test_results.txt
+tmp_styles.css
+debug-gemini.mjs

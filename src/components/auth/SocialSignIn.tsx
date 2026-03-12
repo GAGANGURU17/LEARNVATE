@@ -84,22 +84,22 @@ export function SocialSignIn({ mode }: SocialSignInProps) {
     <div className="space-y-4">
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200" />
+          <div className="w-full border-t border-gray-200" />
         </div>
         <div className="relative flex justify-center text-sm">
-          <span className="bg-white px-4 text-slate-500">Or continue with</span>
+          <span className="bg-white px-4 text-slate-400">Or continue with</span>
         </div>
       </div>
 
       {success && (
-        <div className="flex items-center gap-3 rounded-lg bg-green-50 p-3 text-green-800">
-          <CheckCircle2 className="h-5 w-5 shrink-0 text-green-600" />
+        <div className="flex items-center gap-3 rounded-lg bg-igreen-50 border border-igreen-200 p-3 text-igreen-700">
+          <CheckCircle2 className="h-5 w-5 shrink-0 text-igreen-600" />
           <span className="text-sm font-medium">Success! Redirecting...</span>
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
+        <div className="rounded-lg bg-red-50 border border-red-200 p-3 text-sm text-red-700">{error}</div>
       )}
 
       <div className="flex gap-3">
@@ -107,7 +107,7 @@ export function SocialSignIn({ mode }: SocialSignInProps) {
           type="button"
           onClick={() => handleOAuth(loginWithGoogle, 'google')}
           disabled={!!loading}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 py-3 font-medium text-slate-700 transition-all hover:bg-saffron-50 hover:border-saffron-200 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading === 'google' ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -120,7 +120,7 @@ export function SocialSignIn({ mode }: SocialSignInProps) {
           type="button"
           onClick={() => handleOAuth(loginWithApple, 'apple')}
           disabled={!!loading}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-slate-300 py-3 font-medium text-slate-900 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+          className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-gray-200 py-3 font-medium text-slate-900 transition-all hover:bg-gray-50 hover:border-gray-300 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {loading === 'apple' ? (
             <Loader2 className="h-5 w-5 animate-spin" />
@@ -140,13 +140,13 @@ export function SocialSignIn({ mode }: SocialSignInProps) {
               onChange={(e) => setPhoneNumber(e.target.value)}
               placeholder="+1 234 567 8900"
               disabled={!!loading}
-              className="flex-1 rounded-lg border border-slate-300 py-3 px-4 focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-slate-50"
+              className="flex-1 rounded-xl border border-gray-200 py-3 px-4 text-slate-900 placeholder-slate-400 focus:border-saffron-400 focus:outline-none focus:ring-2 focus:ring-saffron-200 disabled:bg-gray-50 text-sm"
             />
             <button
               type="button"
               onClick={handleSendCode}
               disabled={!!loading || !phoneNumber.trim()}
-              className="flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-3 font-medium text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-70"
+              className="flex items-center gap-2 rounded-xl border border-gray-200 px-4 py-3 font-medium text-slate-700 transition-all hover:bg-saffron-50 hover:border-saffron-200 disabled:cursor-not-allowed disabled:opacity-70 text-sm"
             >
               {loading === 'phone' ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -156,14 +156,14 @@ export function SocialSignIn({ mode }: SocialSignInProps) {
               Send code
             </button>
           </div>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-400">
             Include country code (e.g. +91 India, +1 US)
           </p>
         </div>
       ) : (
         <div className="space-y-2">
           {codeSent && (
-            <div className="flex items-center gap-2 rounded-lg bg-green-50 p-2 text-sm text-green-700">
+            <div className="flex items-center gap-2 rounded-lg bg-igreen-50 border border-igreen-200 p-2 text-sm text-igreen-700">
               <CheckCircle2 className="h-4 w-4" />
               Code sent to {phoneNumber}
             </div>
@@ -177,13 +177,13 @@ export function SocialSignIn({ mode }: SocialSignInProps) {
               placeholder="Enter 6-digit code"
               maxLength={6}
               disabled={!!loading}
-              className="flex-1 rounded-lg border border-slate-300 py-3 px-4 text-center focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:bg-slate-50"
+              className="flex-1 rounded-xl border border-gray-200 py-3 px-4 text-center text-slate-900 focus:border-saffron-400 focus:outline-none focus:ring-2 focus:ring-saffron-200 disabled:bg-gray-50 text-sm"
             />
             <button
               type="button"
               onClick={handleVerifyCode}
               disabled={!!loading || verifyCode.length < 6}
-              className="flex items-center gap-2 rounded-lg bg-primary-500 px-4 py-3 font-medium text-white transition-colors hover:bg-primary-600 disabled:cursor-not-allowed disabled:opacity-70"
+              className="flex items-center gap-2 rounded-xl bg-saffron-500 px-4 py-3 font-medium text-white transition-colors hover:bg-saffron-600 disabled:cursor-not-allowed disabled:opacity-70 text-sm"
             >
               {loading === 'phone' ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -200,7 +200,7 @@ export function SocialSignIn({ mode }: SocialSignInProps) {
                 setCodeSent(false);
               }}
               disabled={!!loading}
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 disabled:opacity-70"
+              className="rounded-xl border border-gray-200 px-3 py-2 text-sm text-slate-600 hover:bg-gray-50 disabled:opacity-70"
             >
               Change
             </button>

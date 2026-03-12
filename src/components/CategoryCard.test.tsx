@@ -8,20 +8,20 @@ vi.mock('next/navigation', () => ({
 
 describe('CategoryCard', () => {
   it('renders category name', () => {
-    render(<CategoryCard category="Mathematics" />);
-    expect(screen.getByText('Mathematics')).toBeInTheDocument();
+    render(<CategoryCard category="UPSC (IAS/IPS)" />);
+    expect(screen.getByText('UPSC (IAS/IPS)')).toBeInTheDocument();
   });
 
   it('renders description when provided', () => {
-    render(<CategoryCard category="Science" description="Test your science knowledge" />);
-    expect(screen.getByText('Test your science knowledge')).toBeInTheDocument();
+    render(<CategoryCard category="GATE (Engineering)" description="Test your engineering knowledge" />);
+    expect(screen.getByText('Test your engineering knowledge')).toBeInTheDocument();
   });
 
   it('opens exam setup modal when clicked', () => {
-    render(<CategoryCard category="General Knowledge" />);
+    render(<CategoryCard category="SSC (CGL/CHSL)" />);
     const button = screen.getByRole('button');
     fireEvent.click(button);
-    expect(screen.getByText(/Exam Setup/)).toBeInTheDocument();
-    expect(screen.getByText(/Start Exam/)).toBeInTheDocument();
+    expect(screen.getByText(/Configure your examination session/)).toBeInTheDocument();
+    expect(screen.getByText(/Launch Live Exam Session/)).toBeInTheDocument();
   });
 });

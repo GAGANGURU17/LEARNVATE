@@ -11,6 +11,42 @@ export const QUESTION_CATEGORIES = [
 
 export const SAMPLE_QUESTIONS: McqQuestion[] = [
   {
+    id: 'upsc-1',
+    category: 'UPSC (IAS/IPS)',
+    difficulty: 'preliminary',
+    question: 'Which article of the Indian Constitution deals with the Power of Parliament to amend the Constitution and procedure thereof?',
+    options: ['Article 360', 'Article 368', 'Article 370', 'Article 352'],
+    correctIndex: 1,
+    explanation: 'Article 368 of Part XX of the Indian Constitution provides for the power of Parliament to amend the Constitution and its procedure.',
+  },
+  {
+    id: 'gate-1',
+    category: 'GATE (Engineering)',
+    difficulty: 'preliminary',
+    question: 'In a 8085 microprocessor, which of the following is an 8-bit register?',
+    options: ['Program Counter', 'Stack Pointer', 'Accumulator', 'All of the above'],
+    correctIndex: 2,
+    explanation: 'The Accumulator (A register) is 8-bit, while the Program Counter and Stack Pointer are 16-bit registers.',
+  },
+  {
+    id: 'ssc-1',
+    category: 'SSC (CGL/CHSL)',
+    difficulty: 'preliminary',
+    question: 'Who was the first Indian woman to win an Olympic medal?',
+    options: ['Saina Nehwal', 'Karnam Malleswari', 'Mary Kom', 'P.V. Sindhu'],
+    correctIndex: 1,
+    explanation: 'Karnam Malleswari became the first Indian woman to win an Olympic medal (Bronze) in Weightlifting at the Sydney 2000 Olympics.',
+  },
+  {
+    id: 'central-1',
+    category: 'Central Govt Exams',
+    difficulty: 'preliminary',
+    question: 'Which of the following is NOT a fundamental right according to the Indian Constitution?',
+    options: ['Right to Equality', 'Right to Liberty', 'Right against Exploitation', 'Right to Property'],
+    correctIndex: 3,
+    explanation: 'The 44th Amendment Act, 1978 removed the Right to Property (Article 31) from the list of Fundamental Rights.',
+  },
+  {
     id: 'm1',
     category: 'Mathematics',
     question: 'What is 15 + 27?',

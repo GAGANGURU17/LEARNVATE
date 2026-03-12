@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getQuestionsByCategoryAndDifficulty, QUESTION_CATEGORIES } from '@/lib/questions';
 
 export async function GET(request: NextRequest) {
+  console.log(`GET /api/questions triggered at ${new Date().toISOString()}`);
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category');
   const difficulty = searchParams.get('difficulty');
@@ -26,12 +27,17 @@ export async function GET(request: NextRequest) {
     // If no local questions, try AI generation immediately
     try {
       const { generateAIQuestion } = await import('@/lib/gemini');
+      console.log(`Starting AI Fallback for category: ${category}, difficulty: ${difficulty}`);
       const aiQuestion = await generateAIQuestion(category, difficulty);
       return NextResponse.json(aiQuestion);
     } catch (err) {
       console.error('AI Generation Error in GET:', err);
       return NextResponse.json(
-        { error: 'No questions available and AI generation failed' },
+        { 
+          error: 'No questions available and AI generation failed', 
+          details: err instanceof Error ? err.message : 'Unknown error',
+          debug_info: { category, difficulty }
+        },
         { status: 404 }
       );
     }

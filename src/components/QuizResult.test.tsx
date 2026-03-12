@@ -8,7 +8,7 @@ const mockQuestion = {
   question: 'What is 2 + 2?',
   options: ['3', '4', '5', '6'],
   correctIndex: 1,
-  difficulty: 'easy' as const,
+  difficulty: 'preliminary' as const,
   explanation: 'Basic addition',
 };
 
@@ -16,7 +16,7 @@ describe('QuizResult', () => {
   it('shows Correct when answer was correct', () => {
     const onNext = vi.fn();
     render(<QuizResult question={mockQuestion} selectedIndex={1} correct={true} onNext={onNext} />);
-    expect(screen.getByText('Correct!')).toBeInTheDocument();
+    expect(screen.getByText(/Correct!/)).toBeInTheDocument();
   });
 
   it('shows Incorrect when answer was wrong', () => {
@@ -24,7 +24,7 @@ describe('QuizResult', () => {
     render(
       <QuizResult question={mockQuestion} selectedIndex={0} correct={false} onNext={onNext} />
     );
-    expect(screen.getByText('Incorrect')).toBeInTheDocument();
+    expect(screen.getByText(/Incorrect/)).toBeInTheDocument();
   });
 
   it('shows explanation when provided', () => {

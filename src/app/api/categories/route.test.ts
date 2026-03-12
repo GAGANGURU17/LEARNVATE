@@ -9,7 +9,7 @@ describe('GET /api/categories', () => {
     const data = await res.json();
     expect(data.categories).toBeDefined();
     expect(Array.isArray(data.categories)).toBe(true);
-    expect(data.categories).toContain('Mathematics');
-    expect(data.categories).toContain('Science');
+    expect(data.categories).toContain('UPSC (IAS/IPS)');
+    expect(data.categories).toContain('GATE (Engineering)');
   });
 });

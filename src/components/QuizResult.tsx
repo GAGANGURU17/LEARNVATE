@@ -14,18 +14,18 @@ const OPTION_LABELS = ['A', 'B', 'C', 'D', 'E'];
 
 export function QuizResult({ question, selectedIndex, correct, onNext }: QuizResultProps) {
   return (
-    <div className="glass-card rounded-3xl p-7 animate-scale-in">
+    <div className="bg-white rounded-3xl p-7 animate-scale-in shadow-card border border-gray-100">
       {/* Result header */}
       <div
         className={`mb-6 flex items-center gap-3 rounded-2xl p-4 border ${
           correct
-            ? 'bg-primary-500/12 border-primary-500/25 text-primary-300'
-            : 'bg-rose-500/12 border-rose-500/25 text-rose-300'
+            ? 'bg-igreen-50 border-igreen-200 text-igreen-700'
+            : 'bg-red-50 border-red-200 text-red-700'
         }`}
       >
         <span
           className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-white ${
-            correct ? 'bg-primary-500' : 'bg-rose-500'
+            correct ? 'bg-igreen-500' : 'bg-red-500'
           }`}
         >
           {correct ? <Check className="h-5 w-5" strokeWidth={2.5} /> : <X className="h-5 w-5" strokeWidth={2.5} />}
@@ -39,7 +39,7 @@ export function QuizResult({ question, selectedIndex, correct, onNext }: QuizRes
       </div>
 
       {/* Question text */}
-      <h2 className="mb-6 text-lg font-bold text-white leading-relaxed">
+      <h2 className="mb-6 text-lg font-bold text-slate-900 leading-relaxed">
         {question.question}
       </h2>
 
@@ -50,18 +50,18 @@ export function QuizResult({ question, selectedIndex, correct, onNext }: QuizRes
           const isSelected = index === selectedIndex;
           const isWrongSelected = isSelected && !correct;
 
-          let containerClass = 'border border-white/6 bg-white/3';
-          let labelClass = 'bg-white/8 text-slate-400';
-          let textClass = 'text-slate-400';
+          let containerClass = 'border border-gray-200 bg-gray-50';
+          let labelClass = 'bg-gray-200 text-slate-500';
+          let textClass = 'text-slate-500';
 
           if (isCorrect) {
-            containerClass = 'border border-primary-500/40 bg-primary-500/12';
-            labelClass = 'bg-primary-500 text-white';
-            textClass = 'text-primary-300 font-semibold';
+            containerClass = 'border border-igreen-300 bg-igreen-50';
+            labelClass = 'bg-igreen-500 text-white';
+            textClass = 'text-igreen-700 font-semibold';
           } else if (isWrongSelected) {
-            containerClass = 'border border-rose-500/40 bg-rose-500/12';
-            labelClass = 'bg-rose-500 text-white';
-            textClass = 'text-rose-300';
+            containerClass = 'border border-red-300 bg-red-50';
+            labelClass = 'bg-red-500 text-white';
+            textClass = 'text-red-700';
           }
 
           return (
@@ -71,10 +71,10 @@ export function QuizResult({ question, selectedIndex, correct, onNext }: QuizRes
               </span>
               <span className={`text-sm flex-1 ${textClass}`}>{option}</span>
               {isCorrect && (
-                <Check className="h-4 w-4 text-primary-400 shrink-0" strokeWidth={2.5} />
+                <Check className="h-4 w-4 text-igreen-500 shrink-0" strokeWidth={2.5} />
               )}
               {isWrongSelected && (
-                <X className="h-4 w-4 text-rose-400 shrink-0" strokeWidth={2.5} />
+                <X className="h-4 w-4 text-red-500 shrink-0" strokeWidth={2.5} />
               )}
             </div>
           );
@@ -83,12 +83,12 @@ export function QuizResult({ question, selectedIndex, correct, onNext }: QuizRes
 
       {/* Explanation */}
       {question.explanation && (
-        <div className="mb-7 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 p-4">
+        <div className="mb-7 rounded-2xl bg-navy-50 border border-navy-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Lightbulb className="h-4 w-4 text-cyan-400" />
-            <p className="text-sm font-semibold text-cyan-400">Explanation</p>
+            <Lightbulb className="h-4 w-4 text-navy-500" />
+            <p className="text-sm font-semibold text-navy-600">Explanation</p>
           </div>
-          <p className="text-sm text-slate-300 leading-relaxed">{question.explanation}</p>
+          <p className="text-sm text-slate-600 leading-relaxed">{question.explanation}</p>
         </div>
       )}
 

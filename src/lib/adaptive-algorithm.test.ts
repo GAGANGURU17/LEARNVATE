@@ -18,12 +18,12 @@ describe('getNextDifficulty', () => {
     expect(getNextDifficulty('easy', true, 2)).toBe('medium');
   });
 
-  it('moves to hard when correct with streak 2 at medium', () => {
-    expect(getNextDifficulty('medium', true, 2)).toBe('hard');
+  it('moves to preliminary when correct with streak 2 at hard', () => {
+    expect(getNextDifficulty('hard', true, 2)).toBe('preliminary');
   });
 
-  it('stays hard when correct at hard', () => {
-    expect(getNextDifficulty('hard', true, 2)).toBe('hard');
+  it('stays advanced when correct at advanced', () => {
+    expect(getNextDifficulty('advanced', true, 2)).toBe('advanced');
   });
 
   it('drops from medium to easy when incorrect', () => {
@@ -58,43 +58,43 @@ describe('calculateAccuracy', () => {
 });
 
 describe('getRecommendedDifficulty', () => {
-  it('returns easy when fewer than 5 questions answered', () => {
+  it('returns preliminary when fewer than 5 questions answered', () => {
     expect(
       getRecommendedDifficulty({
         easy: { correct: 3, total: 3 },
         medium: { correct: 0, total: 0 },
         hard: { correct: 0, total: 0 },
       })
-    ).toBe('easy');
+    ).toBe('preliminary');
   });
 
-  it('returns easy when easy accuracy is low', () => {
+  it('returns preliminary when easy accuracy is low', () => {
     expect(
       getRecommendedDifficulty({
         easy: { correct: 1, total: 5 },
         medium: { correct: 0, total: 0 },
         hard: { correct: 0, total: 0 },
       })
-    ).toBe('easy');
+    ).toBe('preliminary');
   });
 
-  it('returns medium when easy mastery achieved', () => {
+  it('returns mains when easy mastery achieved', () => {
     expect(
       getRecommendedDifficulty({
         easy: { correct: 4, total: 5 },
         medium: { correct: 0, total: 0 },
         hard: { correct: 0, total: 0 },
       })
-    ).toBe('medium');
+    ).toBe('mains');
   });
 
-  it('returns hard when medium mastery achieved', () => {
+  it('returns advanced when medium mastery achieved', () => {
     expect(
       getRecommendedDifficulty({
         easy: { correct: 5, total: 5 },
         medium: { correct: 4, total: 5 },
         hard: { correct: 0, total: 0 },
       })
-    ).toBe('hard');
+    ).toBe('advanced');
   });
 });
